@@ -8,7 +8,7 @@ import * as dat from 'dat.gui';
 const app = document.querySelector('#app');
 
 const gui = new dat.GUI();
-const planeRotation = { x: -1.2, y: 0, z: 0 };
+const planeRotation = { x: -1.5, y: 0, z: 0 };
 const guiPlane = gui.addFolder('Plane');
 guiPlane.add(planeRotation, 'x', -1.5, 1.5).step(0.1);
 
@@ -38,7 +38,7 @@ const uniforms = {
 };
 
 // plane
-const planeGeom = new THREE.PlaneGeometry(5, 5);
+const planeGeom = new THREE.PlaneGeometry(200, 200);
 const planeMat = new THREE.ShaderMaterial({
   fragmentShader,
   uniforms,
@@ -50,6 +50,7 @@ scene.add(plane);
 plane.rotateX(0);
 
 plane.rotation.set(planeRotation.x, planeRotation.y, planeRotation.z);
+plane.position.set(0, -1, -50);
 console.log(plane.rotation);
 
 // renderer
