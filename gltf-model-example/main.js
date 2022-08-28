@@ -2,7 +2,13 @@ import * as dat from 'dat.gui';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { modelPosition, directionalLightPosition, sizes } from './config';
+import fragmentShader from './fragmentShader';
+import {
+  uniforms,
+  modelPosition,
+  directionalLightPosition,
+  sizes,
+} from './config';
 import './style.css';
 
 const canvas = document.querySelector('canvas.webgl');
@@ -60,11 +66,10 @@ const model = await loadModel().catch((error) => {
 
 // Floor
 const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(20, 20),
-  new THREE.MeshStandardMaterial({
-    color: '#444444',
-    metalness: 0.2,
-    roughness: 0.5,
+  new THREE.PlaneGeometry(200, 200),
+  new THREE.ShaderMaterial({
+    fragmentShader,
+    uniforms,
   })
 );
 floor.receiveShadow = true;
@@ -143,6 +148,10 @@ const tick = () => {
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - previousTime;
   previousTime = elapsedTime;
+
+  uniforms.iResolution.value.set(window.innerWidth, window.innerHeight, 1);
+  uniforms.iTime.value = elapsedTime;
+
   controls.update();
   renderer.render(scene, camera);
   window.requestAnimationFrame(tick);
