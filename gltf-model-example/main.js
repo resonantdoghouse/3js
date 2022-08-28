@@ -174,7 +174,6 @@ gltfLoader.load('/models/spaceship.gltf', (gltf) => {
    * Debugging with Dat.GUI
    */
   const positionFolder = gui.addFolder('Object Position');
-  // const directionLightFolder = gui.addFolder('Direction Light Position');
 
   positionFolder
     .add(modelPosition, 'x', -10, 10)
@@ -194,23 +193,4 @@ gltfLoader.load('/models/spaceship.gltf', (gltf) => {
       updatePosition(model, 'z', value);
     })
     .step('0.1');
-
-  // directionLightFolder
-  //   .add(directionalLightPosition, 'x', -100, 100)
-  //   .step('0.1')
-  //   .onChange((value) => {
-  //     updatePosition(directionalLight, 'x', value);
-  //   });
-  // directionLightFolder
-  //   .add(directionalLightPosition, 'y', -100, 100)
-  //   .step('0.1')
-  //   .onChange((value) => {
-  //     updatePosition(directionalLight, 'y', value);
-  //   });
-  // directionLightFolder
-  //   .add(directionalLightPosition, 'z', -100, 100)
-  //   .step('0.1')
-  //   .onChange((value) => {
-  //     updatePosition(directionalLight, 'z', value);
-  //   });
 });
