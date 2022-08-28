@@ -2,16 +2,11 @@ import * as dat from 'dat.gui';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { modelPosition, directionalLightPosition, sizes } from './config';
 import './style.css';
 
 const canvas = document.querySelector('canvas.webgl');
 const gui = new dat.GUI(); // debug
-
-// window width & height
-const sizes = {
-  width: window.innerWidth,
-  height: window.innerHeight,
-};
 
 // Scene Setup
 const scene = new THREE.Scene();
@@ -23,18 +18,6 @@ scene.background = new THREE.Color(color);
 
 // Model Loader
 const gltfLoader = new GLTFLoader();
-
-const modelPosition = {
-  x: 0,
-  y: 1,
-  z: 0,
-};
-
-const directionalLightPosition = {
-  x: 0,
-  y: 6,
-  z: 100,
-};
 
 const updatePosition = (object, axis, position) => {
   switch (axis) {
@@ -68,7 +51,6 @@ async function loadModel() {
   model.receiveShadow = true;
   model.castShadow = true;
   scene.add(model);
-
   return model;
 }
 
