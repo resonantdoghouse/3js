@@ -99,13 +99,6 @@ gltfLoader.load('/models/spaceship.gltf', (gltf) => {
     directionalLightPosition.z
   );
 
-  const directionalLightHelper = new THREE.DirectionalLightHelper(
-    directionalLight,
-    5
-  );
-
-  // scene.add(directionalLightHelper); // debug directionalLight
-
   directionalLight.castShadow = true;
   directionalLight.shadow.mapSize.set(1024, 1024);
   directionalLight.shadow.camera.far = 15;
