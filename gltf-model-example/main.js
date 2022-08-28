@@ -1,36 +1,26 @@
-import * as dat from 'dat.gui';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import fragmentShader from './fragmentShader';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { lavaFragmentShader, lavaVertexShader } from './shaders';
+import { modelLoader, createMaterialArray } from './util';
 import {
   uniforms,
   modelPosition,
   directionalLightPosition,
   sizes,
 } from './config';
-import { updatePosition } from './util';
 import './style.css';
 
-const canvas = document.querySelector('canvas.webgl');
-const gui = new dat.GUI(); // debug
-
 // Scene Setup
+const canvas = document.querySelector('canvas.webgl');
 const scene = new THREE.Scene();
-const color = 'skyblue';
+const color = new THREE.Color('#BF836E');
 const near = 10;
-const far = 1000;
+const far = 10000;
 scene.fog = new THREE.Fog(color, near, far);
 scene.background = new THREE.Color(color);
-
-// Model Loader
-const gltfLoader = new GLTFLoader();
-
-function modelLoader(url) {
-  return new Promise((resolve, reject) => {
-    gltfLoader.load(url, (data) => resolve(data), null, reject);
-  });
-}
 
 async function loadModel() {
   const gltf = await modelLoader('/models/spaceship.gltf');
@@ -49,33 +39,39 @@ const model = await loadModel().catch((error) => {
   console.error(error);
 });
 
-// Floor
-const floor = new THREE.Mesh(
-  new THREE.PlaneGeometry(200, 200),
+// Lava floor
+const lava = new THREE.Mesh(
+  new THREE.PlaneGeometry(300, 300),
   new THREE.ShaderMaterial({
-    fragmentShader,
     uniforms,
+    vertexShader: lavaVertexShader,
+    fragmentShader: lavaFragmentShader,
   })
 );
-floor.receiveShadow = true;
-floor.rotation.x = -Math.PI * 0.5;
-scene.add(floor);
+lava.receiveShadow = true;
+lava.rotation.x = -Math.PI * 0.5;
+lava.position.y = 0;
+scene.add(lava);
+
+const materialArray = createMaterialArray('purplenebula');
+
+const skyboxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
+const skybox = new THREE.Mesh(skyboxGeo, materialArray);
+scene.add(skybox);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 3);
+const ambientLight = new THREE.AmbientLight(0xffffff, 10);
 scene.add(ambientLight);
 
 const pointLight = new THREE.PointLight(0xffffff, 1);
 pointLight.castShadow = true;
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-
 directionalLight.position.set(
   directionalLightPosition.x,
   directionalLightPosition.y,
   directionalLightPosition.z
 );
-
 directionalLight.castShadow = true;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.camera.far = 15;
@@ -84,15 +80,14 @@ directionalLight.shadow.camera.top = 7;
 directionalLight.shadow.camera.right = 7;
 directionalLight.shadow.camera.bottom = -7;
 directionalLight.target = model;
-
 scene.add(directionalLight);
 
 // Base camera
 const camera = new THREE.PerspectiveCamera(
-  75,
+  120,
   sizes.width / sizes.height,
   0.1,
-  100
+  300000
 );
 camera.position.set(0, 2, 4);
 camera.add(pointLight);
@@ -123,6 +118,14 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.autoClear = false;
+
+const renderModel = new RenderPass(scene, camera);
+const effectFilm = new FilmPass(0.35, 0.95, 2048, false);
+const composer = new EffectComposer(renderer);
+
+composer.addPass(renderModel);
+// composer.addPass(effectFilm);
 
 // Timing for Animation Loop
 const clock = new THREE.Clock();
@@ -134,11 +137,13 @@ const tick = () => {
   const deltaTime = elapsedTime - previousTime;
   previousTime = elapsedTime;
 
-  uniforms.iResolution.value.set(window.innerWidth, window.innerHeight, 1);
-  uniforms.iTime.value = elapsedTime;
+  uniforms['time'].value += 0.2 * deltaTime;
 
   controls.update();
-  renderer.render(scene, camera);
+  renderer.clear();
+  composer.render(0.01);
+  // renderer.render(scene, camera);
+
   window.requestAnimationFrame(tick);
 };
 
@@ -146,27 +151,3 @@ const tick = () => {
 if (model) {
   tick();
 }
-
-/*
- * Debugging with Dat.GUI
- */
-const positionFolder = gui.addFolder('Object Position');
-
-positionFolder
-  .add(modelPosition, 'x', -10, 10)
-  .step('0.1')
-  .onChange((value) => {
-    updatePosition(model, 'x', value);
-  });
-positionFolder
-  .add(modelPosition, 'y', 0.5, 3.5)
-  .onChange((value) => {
-    updatePosition(model, 'y', value);
-  })
-  .step('0.1');
-positionFolder
-  .add(modelPosition, 'z', -10, 10)
-  .onChange((value) => {
-    updatePosition(model, 'z', value);
-  })
-  .step('0.1');
