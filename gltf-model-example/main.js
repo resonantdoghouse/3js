@@ -9,6 +9,7 @@ import {
   directionalLightPosition,
   sizes,
 } from './config';
+import { updatePosition } from './util';
 import './style.css';
 
 const canvas = document.querySelector('canvas.webgl');
@@ -24,22 +25,6 @@ scene.background = new THREE.Color(color);
 
 // Model Loader
 const gltfLoader = new GLTFLoader();
-
-const updatePosition = (object, axis, position) => {
-  switch (axis) {
-    case 'x':
-      object.position.x = position;
-      break;
-    case 'y':
-      object.position.y = position;
-      break;
-    case 'z':
-      object.position.z = position;
-      break;
-    default:
-      break;
-  }
-};
 
 function modelLoader(url) {
   return new Promise((resolve, reject) => {
