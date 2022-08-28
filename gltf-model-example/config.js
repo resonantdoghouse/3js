@@ -8,10 +8,22 @@ export const modelPosition = {
   z: 0,
 };
 
+export const cameraPosition = {
+  x: 0,
+  y: 1,
+  z: 10,
+};
+
 export const directionalLightPosition = {
   x: 0,
   y: -1,
   z: 0,
+};
+
+export const spaceshipVelocity = {
+  vx: 0,
+  vy: 0,
+  vz: 0,
 };
 
 // window width & height

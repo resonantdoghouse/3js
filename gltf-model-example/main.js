@@ -7,10 +7,13 @@ import { lavaFragmentShader, lavaVertexShader } from './shaders';
 import { modelLoader, createMaterialArray } from './util';
 import {
   uniforms,
+  cameraPosition,
   modelPosition,
   directionalLightPosition,
   sizes,
+  spaceshipVelocity,
 } from './config';
+import InputControl from './InputControl';
 import './style.css';
 
 // Scene Setup
@@ -21,6 +24,9 @@ const near = 10;
 const far = 10000;
 scene.fog = new THREE.Fog(color, near, far);
 scene.background = new THREE.Color(color);
+
+const inputKeys = new InputControl();
+inputKeys.init();
 
 async function loadModel() {
   const gltf = await modelLoader('/models/spaceship.gltf');
@@ -53,7 +59,7 @@ lava.rotation.x = -Math.PI * 0.5;
 lava.position.y = 0;
 scene.add(lava);
 
-const materialArray = createMaterialArray('purplenebula');
+const materialArray = createMaterialArray('flame');
 
 const skyboxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
 const skybox = new THREE.Mesh(skyboxGeo, materialArray);
@@ -84,12 +90,12 @@ scene.add(directionalLight);
 
 // Base camera
 const camera = new THREE.PerspectiveCamera(
-  120,
+  75,
   sizes.width / sizes.height,
   0.1,
   300000
 );
-camera.position.set(0, 2, 4);
+camera.position.set(cameraPosition.x, cameraPosition.y, cameraPosition.z);
 camera.add(pointLight);
 scene.add(camera);
 
@@ -107,9 +113,10 @@ window.addEventListener('resize', () => {
 
 // Controls
 const controls = new OrbitControls(camera, canvas);
-controls.maxPolarAngle = Math.PI / 2; // avoids going below ground
+controls.maxPolarAngle = Math.PI / 2 + 0.15; // avoids going below ground
 controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
+controls.target = model.position;
 
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
@@ -139,7 +146,31 @@ const tick = () => {
 
   uniforms['time'].value += 0.2 * deltaTime;
 
+  const keyState = inputKeys.checkState();
+
+  if (keyState) {
+    if (keyState === 'a') {
+      spaceshipVelocity.vx += 0.001;
+    }
+    if (keyState === 'd') {
+      spaceshipVelocity.vx -= 0.001;
+    }
+    if (keyState === 'w') {
+      spaceshipVelocity.vz += 0.001;
+    }
+    if (keyState === 's') {
+      spaceshipVelocity.vz -= 0.001;
+    }
+  }
+
+  model.position.x += spaceshipVelocity.vx;
+  model.position.z += spaceshipVelocity.vz;
+
+  // camera.position.x = model.position.x;
+  // camera.position.y = model.position.y;
+
   controls.update();
+
   renderer.clear();
   composer.render(0.01);
   // renderer.render(scene, camera);
