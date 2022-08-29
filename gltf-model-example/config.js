@@ -26,7 +26,6 @@ export const spaceshipVelocity = {
   vz: 0,
 };
 
-// window width & height
 export const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
@@ -39,5 +38,6 @@ export const uniforms = {
   uvScale: { value: new Vector2(10.0, 10.0) },
   texture1: { value: textureLoader.load('/textures/lavatile.jpeg') },
 };
+
 uniforms['texture1'].value.wrapS = uniforms['texture1'].value.wrapT =
   RepeatWrapping;

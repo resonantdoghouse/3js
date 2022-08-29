@@ -1,4 +1,19 @@
-import * as THREE from 'three';
+import {
+  Scene,
+  PerspectiveCamera,
+  Color,
+  Fog,
+  Mesh,
+  BoxGeometry,
+  PlaneGeometry,
+  ShaderMaterial,
+  AmbientLight,
+  PointLight,
+  DirectionalLight,
+  WebGLRenderer,
+  PCFSoftShadowMap,
+  Clock,
+} from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
@@ -18,12 +33,12 @@ import './style.css';
 
 // Scene Setup
 const canvas = document.querySelector('canvas.webgl');
-const scene = new THREE.Scene();
-const color = new THREE.Color('#BF836E');
+const scene = new Scene();
+const color = new Color('#BF836E');
 const near = 10;
 const far = 10000;
-scene.fog = new THREE.Fog(color, near, far);
-scene.background = new THREE.Color(color);
+scene.fog = new Fog(color, near, far);
+scene.background = new Color(color);
 
 const inputKeys = new InputControl();
 inputKeys.init();
@@ -46,9 +61,9 @@ const model = await loadModel().catch((error) => {
 });
 
 // Lava floor
-const lava = new THREE.Mesh(
-  new THREE.PlaneGeometry(300, 300),
-  new THREE.ShaderMaterial({
+const lava = new Mesh(
+  new PlaneGeometry(300, 300),
+  new ShaderMaterial({
     uniforms,
     vertexShader: lavaVertexShader,
     fragmentShader: lavaFragmentShader,
@@ -61,18 +76,18 @@ scene.add(lava);
 
 const materialArray = createMaterialArray('flame');
 
-const skyboxGeo = new THREE.BoxGeometry(1000, 1000, 1000);
-const skybox = new THREE.Mesh(skyboxGeo, materialArray);
+const skyboxGeo = new BoxGeometry(1000, 1000, 1000);
+const skybox = new Mesh(skyboxGeo, materialArray);
 scene.add(skybox);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 10);
+const ambientLight = new AmbientLight(0xffffff, 10);
 scene.add(ambientLight);
 
-const pointLight = new THREE.PointLight(0xffffff, 1);
+const pointLight = new PointLight(0xffffff, 1);
 pointLight.castShadow = true;
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+const directionalLight = new DirectionalLight(0xffffff, 1);
 directionalLight.position.set(
   directionalLightPosition.x,
   directionalLightPosition.y,
@@ -89,7 +104,7 @@ directionalLight.target = model;
 scene.add(directionalLight);
 
 // Base camera
-const camera = new THREE.PerspectiveCamera(
+const camera = new PerspectiveCamera(
   75,
   sizes.width / sizes.height,
   0.1,
@@ -118,11 +133,11 @@ controls.target.set(0, 0.75, 0);
 controls.enableDamping = true;
 controls.target = model.position;
 
-const renderer = new THREE.WebGLRenderer({
+const renderer = new WebGLRenderer({
   canvas: canvas,
 });
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = PCFSoftShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.autoClear = false;
@@ -135,7 +150,7 @@ composer.addPass(renderModel);
 // composer.addPass(effectFilm);
 
 // Timing for Animation Loop
-const clock = new THREE.Clock();
+const clock = new Clock();
 let previousTime = 0;
 
 // Animation Loop, Renderer
