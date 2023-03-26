@@ -3,17 +3,11 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-
 const urlParams = new URLSearchParams(window.location.search)
 let query = ''
-
 if (urlParams.has('query')) {
   query = urlParams.get('query')
 }
-
-/*
- * Convert image to black and white grayscale
- */
 async function convertBW(id) {
   const imgObj = document.createElement('img')
   imgObj.src = `https://www.artic.edu/iiif/2/${id}/full/843,/0/default.jpg`
@@ -31,7 +25,6 @@ async function convertBW(id) {
       reject('an error occurred converting gray image')
     }
   })
-
   function gray(imgObj) {
     let canvas = document.createElement('canvas')
     let canvasContext = canvas.getContext('2d')
@@ -64,30 +57,20 @@ async function convertBW(id) {
     return canvas.toDataURL()
   }
 }
-
-/**
- * Base
- */
-// Debug
 const gui = new dat.GUI()
-// Canvas
 const canvas = document.querySelector('canvas.webgl')
-// Scene
 const scene = new THREE.Scene()
-const color = 'skyblue' // white
+const color = 'skyblue'
 const near = 10
 const far = 100
-scene.fog = new THREE.Fog(color, near, far)
-scene.background = new THREE.Color(color)
 const imageTextureSettings = {
   heightmapSize: -0.75,
   metalness: 0,
   roughness: 1,
   normalScale: new THREE.Vector2(0, 0),
 }
-/**
- * Models
- */
+scene.fog = new THREE.Fog(color, near, far)
+scene.background = new THREE.Color(color)
 const gltfLoader = new GLTFLoader()
 const directionalLightPosition = {
   x: 0,
@@ -95,11 +78,7 @@ const directionalLightPosition = {
   z: 0,
 }
 let model = null
-/*
- * Dat GUI controls, folders
- */
 function enableDatGUI() {
-  // Dat GUI controls
   const imageTextureFolder = gui.addFolder('Height Map')
   imageTextureFolder
     .add(imageTextureSettings, 'heightmapSize', -2, 2)
@@ -119,11 +98,7 @@ function enableDatGUI() {
       imageTextureSettings.roughness = value
       imageMaterial.roughness = value
     })
-  // imageTextureFolder.open();
 }
-/*
- * Blender Model Loader
- */
 function loadModelPromise(url) {
   return new Promise((resolve) => {
     new GLTFLoader().load(url, resolve)
@@ -143,9 +118,6 @@ function loadModel(position) {
     })
     .catch((error) => console.log(error))
 }
-/**
- * Floor
- */
 const terrain = new THREE.Mesh(
   new THREE.PlaneGeometry(100, 100),
   new THREE.MeshStandardMaterial({
@@ -154,13 +126,10 @@ const terrain = new THREE.Mesh(
     roughness: 1,
   })
 )
-// terrain.receiveShadow = true;
 terrain.rotation.x = -Math.PI * 0.5
 terrain.position.y = -10
 scene.add(terrain)
-/**
- * Lights
- */
+
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
 scene.add(ambientLight)
 const pointLight = new THREE.PointLight(0xffffff, 0.5)
@@ -168,29 +137,22 @@ const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
 directionalLight.position.set(-5, 10, 3)
 scene.add(directionalLight)
 
-/**
- * Sizes
- */
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight,
 }
 
 window.addEventListener('resize', () => {
-  // Update sizes
   sizes.width = window.innerWidth
   sizes.height = window.innerHeight
-  // Update camera
   camera.aspect = sizes.width / sizes.height
   camera.updateProjectionMatrix()
-  // Update renderer
   renderer.setSize(sizes.width, sizes.height)
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 /**
  * Camera
  */
-// Base camera
 const camera = new THREE.PerspectiveCamera(
   75,
   sizes.width / sizes.height,
@@ -200,7 +162,6 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 0, 9)
 camera.add(pointLight)
 scene.add(camera)
-// Controls
 const controls = new OrbitControls(camera, canvas)
 controls.minPolarAngle = 0.1
 controls.maxPolarAngle = Math.PI / 2 + 1.5 // avoids going below ground
@@ -210,7 +171,8 @@ controls.target.set(0, 0.75, 0)
 controls.enableDamping = true
 controls.listenToKeyEvents(window)
 let imageMaterial
-function loadImage(id) {
+
+async function loadImage(id) {
   const loader = new THREE.TextureLoader()
   const heightMapImage = convertBW(id)
   heightMapImage
@@ -256,29 +218,16 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 let previousTime = 0
-// rotation
-let lineZRotation = null
-let ninetyDegrees = Math.PI / 2
 const tick = () => {
   const elapsedTime = clock.getElapsedTime()
-  const deltaTime = elapsedTime - previousTime
   previousTime = elapsedTime
-  // Update controls
   controls.update()
-  // Render
   renderer.render(scene, camera)
-  // Call tick again on the next frame
   window.requestAnimationFrame(tick)
 }
+
 tick()
-async function getArtIds() {
-  await fetch(`https://api.artic.edu/api/v1/artworks/`)
-    .then((response) => response.json())
-    .then((response) => {
-      const { data } = response
-      const randomIndex = randomFromArray(data)
-    })
-}
+
 // util
 function randomFromArray(array) {
   return Math.floor(Math.random() * array.length)
@@ -289,26 +238,6 @@ function loadArt(id) {
     .then((response) => {
       loadImage(response.data.image_id)
     })
-}
-function appendImg(data) {
-  const { thumbnail, image_id, title } = data
-  const article = document.createElement('article')
-  article.style.position = 'absolute'
-  article.style.top = '0'
-  article.style.left = '0'
-  const imgUrl = `https://www.artic.edu/iiif/2/${image_id}/full/843,/0/default.jpg`
-  const img = document.createElement('img')
-  img.src = thumbnail.lqip
-  img.src = imgUrl
-  img.style.zIndex = '999'
-  img.style.width = '90%'
-  img.style.opacity = '0.9'
-  img.style.maxWidth = '100%'
-  const imgTitle = document.createElement('h2')
-  imgTitle.innerText = title
-  article.appendChild(img)
-  article.appendChild(imgTitle)
-  document.body.appendChild(article)
 }
 function findImage(query) {
   const queryObj = {
