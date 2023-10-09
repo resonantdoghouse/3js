@@ -23,7 +23,6 @@ class InputControl {
   }
 
   checkState() {
-    // console.log(this.keyState);
     if (this.checkKey('w')) {
       return 'w';
     }
@@ -35,6 +34,12 @@ class InputControl {
     }
     if (this.checkKey('d')) {
       return 'd';
+    }
+    if (this.checkKey('q')) {
+      return 'q';
+    }
+    if (this.checkKey('z')) {
+      return 'z';
     }
     if (this.checkKey('ArrowLeft')) {
       return 'ArrowLeft';

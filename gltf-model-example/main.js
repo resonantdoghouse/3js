@@ -165,21 +165,32 @@ const tick = () => {
 
   if (keyState) {
     if (keyState === 'a') {
-      spaceshipVelocity.vx += 0.001;
+      spaceshipVelocity.vRoll -= 0.003;
+      model.rotation.set(spaceshipVelocity.vPitch, 0, spaceshipVelocity.vRoll);
+    }
+    if (keyState === 'q') {
+      spaceshipVelocity.vy += 0.001;
+    }
+    if (keyState === 'z') {
+      spaceshipVelocity.vy -= 0.001;
     }
     if (keyState === 'd') {
-      spaceshipVelocity.vx -= 0.001;
+      spaceshipVelocity.vRoll += 0.003;
+      model.rotation.set(spaceshipVelocity.vPitch, 0, spaceshipVelocity.vRoll);
     }
     if (keyState === 'w') {
-      spaceshipVelocity.vz += 0.001;
+      spaceshipVelocity.vPitch += 0.003;
+      model.rotation.set(spaceshipVelocity.vPitch, 0, spaceshipVelocity.vRoll);
     }
     if (keyState === 's') {
-      spaceshipVelocity.vz -= 0.001;
+      spaceshipVelocity.vPitch -= 0.003;
+      model.rotation.set(spaceshipVelocity.vPitch, 0, spaceshipVelocity.vRoll);
     }
   }
 
   model.position.x += spaceshipVelocity.vx;
   model.position.z += spaceshipVelocity.vz;
+  model.position.y += spaceshipVelocity.vy;
 
   // camera.position.x = model.position.x;
   // camera.position.y = model.position.y;

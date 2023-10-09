@@ -24,6 +24,8 @@ export const spaceshipVelocity = {
   vx: 0,
   vy: 0,
   vz: 0,
+  vRoll: 0,
+  vPitch: 0
 };
 
 export const sizes = {
